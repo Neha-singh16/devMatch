@@ -12,9 +12,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev" : "nodemon src/app.js"
+    "dev": "nodemon src/app.js"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "bcrypt": "^5.1.1",
+    "express": "^4.21.2",
+    "validator": "^13.15.0"
   }
 }
