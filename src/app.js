@@ -1,8 +1,11 @@
 const express = require("express");
 const app = express();
+const cookies = require("cookie-parser"); //to read the cookies we user these npm package!!
+const jwt = require("jsonwebtoken");
 app.use(express.json());
+app.use(cookies());
 const { validateSignUpData } = require("./utils/validate");
-
+const { userAuth } = require("./config/middlewares/auth");
 const bcrypt = require("bcrypt");
 
 const { User } = require("./models/user");
@@ -38,18 +41,24 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
- if(!email || !password){
-  throw new Error("fill the details!!");
-  
- }
+    if (!email || !password) {
+      throw new Error("fill the details!!");
+    }
 
     const user = await User.findOne({ email: email });
-    if (!user) {``
-      res.status(400).send("Inavalid credentails!!");
+    if (!user) {
+      return res.status(400).send("Inavalid credentails!!");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
+      const token = await jwt.sign({ _id: user._id }, "Nain@$123", {
+        expiresIn: "0D",
+      });
+
+      // console.log("Token: ", token);
+
+      res.cookie("token", token, { expires: new Date(Date.now() + 900000) }); //t o read the cookies use a npm package named cookie-parser to read the exiting cookie
       res.send("Login Successfull!!");
     } else {
       throw new Error("Inavalid Credentials");
@@ -58,106 +67,80 @@ app.post("/login", async (req, res) => {
     res.status(400).send(`Invalid Data!! Error: ${err.message}`);
   }
 });
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
 
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const user = await User.find({ email: userEmail });
-    if (!user) {
-      return res.status(404).send("User email is not found!!");
-    } else {
-      res.send(user);
-    }
+    const user = req.user;
+
+    res.send(user);
   } catch (err) {
-    res.status(400).send(`User email is not found!! Error: ${err.message}`);
+    res.status(400).send(`Error: ${err.message}`);
   }
 });
 
-app.get("/feed", async (req, res) => {
-  const userEmail = req.body.email;
-
+app.post("/sendReq", userAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: userEmail });
-    if (!user) {
-      return res.status(404).send("User email is not found!!");
-    } else {
-      res.send(user);
-    }
+    res.send("i have sented you a request darling!!! can you please Acceeppppppt me babe??");
   } catch (err) {
-    res.status(400).send(`User email is not found!! Error: ${err.message}`);
+    res.status(400).send(`Error: ${err.message}`);
   }
 });
 
-app.delete("/user", async (req, res) => {
-  const deleteUser = req.body.userId;
+// app.patch("/user/:userId", async (req, res) => {
+//   const userId = req?.params.userId;
+//   const data = req.body;
+//   try {
+//     const ALLOWED_UPDATE = [
+//       "firstName",
+//       "lastName",
+//       "age",
+//       "gender",
+//       "about",
+//       "skills",
+//     ];
 
-  try {
-    const user = await User.findByIdAndDelete(deleteUser);
-    if (!user) {
-      res.status(404).send("User is not found!!");
-    } else {
-      res.send(user);
-    }
-  } catch (err) {
-    res.status(400).send(`Something went wrong!! Error: ${err.message}`);
-  }
-});
+//     const isUpdateUser = Object.keys(data).every((k) =>
+//       ALLOWED_UPDATE.includes(k)
+//     );
 
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req?.params.userId;
-  const data = req.body;
-  try {
-    const ALLOWED_UPDATE = [
-      "firstName",
-      "lastName",
-      "age",
-      "gender",
-      "about",
-      "skills",
-    ];
+//     if (!isUpdateUser) {
+//       throw new Error("Invalid Update!!");
+//     }
 
-    const isUpdateUser = Object.keys(data).every((k) =>
-      ALLOWED_UPDATE.includes(k)
-    );
+//     if (data.skills && data.skills.length > 10) {
+//       throw new Error("Skills should be less than 10!!");
+//     }
 
-    if (!isUpdateUser) {
-      throw new Error("Invalid Update!!");
-    }
+//     const user = await User.findByIdAndUpdate(userId, req.body, {
+//       runValidators: true,
+//       new: true,
+//     });
+//     console.log(user);
 
-    if (data.skills && data.skills.length > 10) {
-      throw new Error("Skills should be less than 10!!");
-    }
+//     if (!user) {
+//       res.status(404).send("User is not found!!");
+//     } else {
+//       res.send(user);
+//     }
+//   } catch (err) {
+//     res.status(400).send(`Something went wrong!! Error: ${err.message}`);
+//   }
+// });
 
-    const user = await User.findByIdAndUpdate(userId, req.body, {
-      runValidators: true,
-      new: true,
-    });
-    console.log(user);
+// app.put("/user", async (req, res) => {
+//   const replaceUser = req.body.userId;
 
-    if (!user) {
-      res.status(404).send("User is not found!!");
-    } else {
-      res.send(user);
-    }
-  } catch (err) {
-    res.status(400).send(`Something went wrong!! Error: ${err.message}`);
-  }
-});
-
-app.put("/user", async (req, res) => {
-  const replaceUser = req.body.userId;
-
-  try {
-    const user = await User.findOneAndReplace({ _id: replaceUser }, req.body);
-    if (!user) {
-      res.status(404).send("user is not found!!");
-    } else {
-      res.send(user);
-    }
-  } catch (err) {
-    res.status(400).send(`Something went wrong!! Error: ${err.message}`);
-  }
-});
+//   try {
+//     const user = await User.findOneAndReplace({ _id: replaceUser }, req.body);
+//     if (!user) {
+//       res.status(404).send("user is not found!!");
+//     } else {
+//       res.send(user);
+//     }
+//   } catch (err) {
+//     res.status(400).send(`Something went wrong!! Error: ${err.message}`);
+//   }
+// });
 
 connectDB()
   .then(() => {
