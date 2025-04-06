@@ -1,4 +1,5 @@
 const validator = require("validator");
+const bcrypt = require("bcrypt");
 
 const validateSignUpData = (req) => {
   const { firstName, email, password } = req.body;
@@ -14,7 +15,27 @@ const validateSignUpData = (req) => {
   }
 };
 
+const validateUserFields = (req) => {
+  const ALLOWED_FIELDS = ["firstName", "email", "age", "about", "skills"];
+  const data = req.body;
+
+  if (Object.keys(data).length === 0) {
+    throw new Error("No fields provided for update!!");
+  }
+  const isUpdateUser = Object.keys(data).every((fields) =>
+    ALLOWED_FIELDS.includes(fields)
+  );
+
+  if (!isUpdateUser) {
+    throw new Error("Invalide Update!!");
+  }
+  // return isUpdateUser;
+};
+
+
 
 module.exports = {
-    validateSignUpData,
-}
+  validateSignUpData,
+  validateUserFields,
+ 
+};

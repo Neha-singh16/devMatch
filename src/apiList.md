@@ -7,7 +7,8 @@
 ## profileRouter
 - GET /profile
 - PATCH /profile/edit
-- DELETE /profile/delete
+- PATCH /profile/password
+
 
 
 ## requestSendRouter

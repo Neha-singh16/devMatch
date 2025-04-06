@@ -45,8 +45,8 @@ const userScheme = mongoose.Schema(
     about: {
       type: String,
       default: "Hey there! this is an default message...",
-      minLength: 30,
-      maxLength: 200,
+      minLength: 10,
+      maxLength: 100,
     },
     skills: {
       type: [String],
