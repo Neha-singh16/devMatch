@@ -9,8 +9,6 @@
 - PATCH /profile/edit
 - PATCH /profile/password
 
-
-
 ## requestSendRouter
 - POST /request/send/interested/:userId
 - POST /request/send/ignored/:userId
