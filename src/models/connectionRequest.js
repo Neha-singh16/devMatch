@@ -28,6 +28,8 @@ const connectionRequestSchema = new Schema(
   }
 );
 
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
+
 connectionRequestSchema.pre("save", function () {
   const connectionRequest = this;
 

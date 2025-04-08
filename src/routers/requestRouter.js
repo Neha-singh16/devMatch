@@ -49,7 +49,47 @@ requestRouter.post(
       const data = await connectionRequest.save();
 
       res.json({
-        message: req.user.firstName + " your request is sent to!! " + isUser.firstName,
+        message:
+          req.user.firstName + " your request is sent to!! " + isUser.firstName,
+        data: data,
+      });
+    } catch (err) {
+      res.status(400).send(`Error: ${err.message}`);
+    }
+  }
+);
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status, requestId } = req.params;
+      const loggedInUserId = req.user._id;
+
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).send("Invalid Status!!");
+      }
+
+      const request = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUserId,
+        status: "interested",
+      });
+
+      if (!request) {
+        return res
+          .status(404)
+          .send(
+            `No connection request found with ID "${requestId}" assigned to your account (User ID: "${loggedInUserId}").`
+          );
+      }
+
+      request.status = status;
+      const data = await request.save();
+
+      res.json({
+        message: `Your request is ${status}!!`,
         data: data,
       });
     } catch (err) {
