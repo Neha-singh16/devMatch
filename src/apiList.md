@@ -10,13 +10,14 @@
 - PATCH /profile/password
 
 ## requestSendRouter
-- POST /request/send/interested/:userId
-- POST /request/send/ignored/:userId
-- POST /request/send/accepted/:userId
-- POST /request/send/rejected/:userId
+- POST /request/send/:status/:userId
+
+- POST /request/review/:status/:requestId
+
 
 ## userRouter
 - GET /user/connections
 - GET /user/feed
+
 - GET /user/match
 - GET /user/requests
